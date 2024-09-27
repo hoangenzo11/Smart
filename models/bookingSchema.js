@@ -9,7 +9,7 @@ const bookingSchema = new mongoose.Schema(
         },
         user: {
             type: mongoose.Types.ObjectId,
-            ref: "User",
+            ref: "User", // Ensure this line correctly references the User model
             required: true,
         },
 

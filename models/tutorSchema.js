@@ -43,7 +43,6 @@ const tutorSchema = new Schema({
 
     bio: { type: String, maxLength: 50 },
     about: { type: String },
-    timeSlots: { type: Array },
     reviews: [{ type: mongoose.Types.ObjectId, ref: "Review" }],
     booking : [{ type: mongoose.Types.ObjectId, ref: "Booking" }],
     averageRating: {
@@ -59,7 +58,9 @@ const tutorSchema = new Schema({
         enum: ["pending", "approved", "cancelled"],
         default: "pending",
     },
-
+    verificationToken: { type: String },
+    verificationTokenExpiry: { type: Date },
+    isVerified: { type: Boolean, default: false },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
 });

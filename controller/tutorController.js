@@ -3,14 +3,22 @@ const Tutor = require('../models/tutorSchema');
 
 const submitApplication = async (req, res) => {
     const { specialization, qualifications, experiences } = req.body;
-    const id = req.userId;
+    const id = req.params.id; // Get tutor ID from URL parameters
 
     try {
+        console.log('Tutor ID:', id);
+        console.log('Request Body:', req.body);
+
         const tutor = await Tutor.findByIdAndUpdate(
             id,
             { specialization, qualifications, experiences, isApproved: 'pending' },
             { new: true }
         );
+
+        if (!tutor) {
+            return res.status(400).json({ success: false, error: 'Tutor not found' });
+        }
+
         res.status(200).json({ success: true, message: 'Application submitted', data: tutor });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
@@ -54,6 +62,7 @@ const updateTutor = async (req, res) => {
 
     try {
         const updateTutor = await Tutor.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+        console.log('Update Tutor:', updateTutor);
         res.status(200).json({ success: true, message: 'Tutor updated successfully', data: updateTutor });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });

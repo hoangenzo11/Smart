@@ -1,9 +1,12 @@
 const Booking = require('../models/bookingSchema');
+
+
 const getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
             .populate('tutor', 'name')
-            .populate('user', 'name email');
+            .populate('user') // Ensure this line correctly populates the user field
+        console.log('All Bookings:', bookings);
         res.status(200).json({ success: true, data: bookings });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
@@ -29,14 +32,13 @@ const getUserBookings = async (req, res) => {
 };
 
 const createBooking = async (req, res) => {
-    const { tutor, price, appointmentDate, timeSlot } = req.body;
+    const { tutor, appointmentDate, timeSlot } = req.body;
     const userId = req.params.userId; // Get the user ID from the request parameters
 
     try {
         const newBooking = new Booking({
             tutor,
             user: userId,
-            price,
             appointmentDate,
             timeSlot,
             status: 'pending',

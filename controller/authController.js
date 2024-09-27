@@ -1,13 +1,11 @@
-const nodemailer = require('nodemailer');
+
 require('dotenv').config();
-const transporter = nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 587,
-    auth: {
-        user: 'apikey', // This is the fixed value for SendGrid
-        pass: process.env.SENDGRID_API_KEY // Ensure this is set in your environment variables
-    }
-});
+const sgMail = require('@sendgrid/mail');
+require('dotenv').config();
+const nodemailer = require('nodemailer'); // Add this line
+
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 
 
@@ -120,14 +118,14 @@ const register = async (req, res) => {
 
         // Send verification email
         const verificationUrl = `http://${req.headers.host}/api/auth/verify-email?token=${verificationToken}`;
-        const mailOptions = {
+        const msg = {
             to: email, // Set to the user's email address
             from: process.env.EMAIL_USER,
             subject: 'Email Verification',
             text: `Please verify your email by clicking the following link: ${verificationUrl}`,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sgMail.send(msg);
 
         await user.save();
         res.status(200).json({ success: true, message: 'User created successfully. Please check your email to verify your account.' });
@@ -163,6 +161,34 @@ const verifyEmail = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+// const verifyEmail = async (req, res) => {
+//     const { token } = req.query;
+//
+//     try {
+//         const user = await User.findOne({
+//             verificationToken: token,
+//             verificationTokenExpiry: { $gt: Date.now() }
+//         }) || await Tutor.findOne({
+//             verificationToken: token,
+//             verificationTokenExpiry: { $gt: Date.now() }
+//         });
+//
+//         if (!user) {
+//             return res.status(400).json({ success: false, error: 'Verification token is invalid or has expired' });
+//         }
+//
+//         // Clear the verification token fields and mark the user as verified
+//         user.verificationToken = undefined;
+//         user.verificationTokenExpiry = undefined;
+//         user.isVerified = true; // Assuming you have an `isVerified` field in your schema
+//         await user.save();
+//
+//         res.status(200).json({ success: true, message: 'Email has been verified successfully' });
+//     } catch (error) {
+//         res.status(500).json({ success: false, error: error.message });
+//     }
+// };
 
 
 // login
@@ -232,7 +258,7 @@ const requestPasswordReset = async (req, res) => {
         const transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
-                user: process.env.EMAIL_USER,
+                user: process.env.EMAIL_USER_RECOVERY,
                 pass: process.env.EMAIL_PASSWORD,
             },
         });
@@ -259,7 +285,7 @@ const requestPasswordReset = async (req, res) => {
 // reset password
 const resetPassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
-    const userId = req.userId;
+    const userId = req.params.id; // Get the user ID from the request parameters
 
     try {
         const user = await User.findById(userId) || await Tutor.findById(userId);

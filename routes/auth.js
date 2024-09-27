@@ -8,6 +8,6 @@ authRoutes.get('/verify-email', authController.verifyEmail);
 authRoutes.post('/login', authController.login);
 authRoutes.post('/logout', authenticate, authController.logout);
 authRoutes.post('/request-password-reset', authController.requestPasswordReset);
-authRoutes.post('/reset-password', authenticate,authController.resetPassword);
+authRoutes.post('/reset-password/:id', authenticate, authController.resetPassword);
 authRoutes.post('/forgot-password', authController.forgotPassword);
 module.exports= authRoutes;
